@@ -31,6 +31,7 @@ from pyram.matrc import matrc
 from pyram.solve import solve
 from pyram.outpt import outpt
 from scipy.linalg import lu_factor, lu_solve
+from scipy.special import factorial
 
 
 class PyRAM:
@@ -709,7 +710,7 @@ class PyRAM:
         dh1 = numpy.zeros(n, dtype=complex)
         dh2 = numpy.zeros(n, dtype=complex)
         dh3 = numpy.zeros(n, dtype=complex)
-        fact = numpy.zeros(n + 1)
+        fact = numpy.zeros(n)  # + 1)
         sig = self.k0 * self._dr
 
         # In ram.f, ip=1 is in all calls except from the self starter.
@@ -719,9 +720,8 @@ class PyRAM:
             nu, alp = 1.0, -0.25
 
         # The factorials
-        fact[0] = 1
-        for i in range(1, n):
-            fact[i] = (i + 1) * fact[i - 1]
+        # Observe that this array starts at 1!, not 0!.
+        fact = factorial(numpy.arange(n) + 1)
 
         # The binomial coefficients
         for i in range(n + 1):
