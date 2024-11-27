@@ -31,7 +31,7 @@ from pyram.matrc import matrc
 from pyram.solve import solve
 from pyram.outpt import outpt
 from scipy.linalg import lu_factor, lu_solve
-from scipy.special import factorial
+from scipy.special import factorial, binom
 
 
 class PyRAM:
@@ -721,15 +721,25 @@ class PyRAM:
 
         # The factorials
         # Observe that this array starts at 1!, not 0!.
-        fact = factorial(numpy.arange(n) + 1)
+        fact = factorial(numpy.arange(n, dtype=float) + 1)
 
         # The binomial coefficients
-        for i in range(n + 1):
+        # The binomial coefficients
+        """for i in range(n + 1):
             _bin[i, 0] = 1
             _bin[i, i] = 1
         for i in range(2, n + 1):
             for j in range(1, i):
-                _bin[i, j] = _bin[i - 1, j - 1] + _bin[i - 1, j]
+                _bin[i, j] = _bin[i - 1, j - 1] + _bin[i - 1, j]"""
+
+        tmpx = numpy.zeros((n + 1, n + 1))
+        tmpy = numpy.zeros((n + 1, n + 1))
+        for ix in range(n + 1):
+            tmpx += numpy.diag(numpy.arange(ix, n + 1, dtype=float), -ix)
+            tmpy += numpy.diag(numpy.arange(0, n + 1 - ix, dtype=float), -ix)
+
+        _bin = binom(tmpx, tmpy)
+        _bin[numpy.triu_indices(n + 1, 1)] = 0.0
 
         # The accuracy constraints
         dg, dh1, dh2, dh3 = self.deriv(
@@ -760,12 +770,12 @@ class PyRAM:
                 a[n - 2, 2 * j] = z1 ** (j + 1)
                 a[n - 2, 2 * j + 1] = 0
 
-        if self._use_splinalg:
-            a_slice = a[:n, :n]
-            LU, piv = lu_factor(a_slice)
-            b = lu_solve((LU, piv), b)
-        else:
-            a, b = self.gauss(n, a, b, self.pivot)
+        # if self._use_splinalg:
+        a_slice = a[:n, :n]
+        LU, piv = lu_factor(a_slice)
+        b = lu_solve((LU, piv), b)
+        # else:
+        #    a, b = self.gauss(n, a, b, self.pivot)
 
         dh1[0] = 1
         for j in range(self._np):
@@ -812,7 +822,7 @@ class PyRAM:
 
     @staticmethod
     def gauss(n, a, b, pivot):
-        """Gaussian elimination"""
+        # Gaussian elimination
 
         # Downward elimination
         for i in range(n):
@@ -837,7 +847,7 @@ class PyRAM:
 
     @staticmethod
     def pivot(n, i, a, b):
-        """Rows are interchanged for stability"""
+        # Rows are interchanged for stability
 
         i0 = i
         amp0 = numpy.abs(a[i, i])

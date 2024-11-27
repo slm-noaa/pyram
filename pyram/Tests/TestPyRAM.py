@@ -103,7 +103,7 @@ class TestPyRAM(unittest.TestCase):
             dz=self.inputs["dz"],
             zmplt=self.inputs["zmplt"],
             c0=self.inputs["c0"],
-            use_splinalg=True,
+            use_splinalg=False,
         )
         pyram.run()
 
