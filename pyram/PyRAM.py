@@ -658,7 +658,7 @@ class PyRAM:
 
         # Apply the operator (1-X)**2*(1+X)**(-1/4)*exp(ci*k0*r*sqrt(1+X))
 
-        self.epade(ip=2)
+        self.epade(ip=True)
         matrc(
             self.k0,
             self._dz,
@@ -698,7 +698,7 @@ class PyRAM:
             self._np,
         )
 
-    def epade(self, ip=1):
+    def epade(self, ip=False):
         """The coefficients of the rational approximation"""
 
         n = 2 * self._np
@@ -712,10 +712,11 @@ class PyRAM:
         fact = numpy.zeros(n + 1)
         sig = self.k0 * self._dr
 
-        if ip == 1:
-            nu, alp = 0, 0
-        else:
-            nu, alp = 1, -0.25
+        # In ram.f, ip=1 is in all calls except from the self starter.
+        nu, alp = 0.0, 0.0
+
+        if ip:
+            nu, alp = 1.0, -0.25
 
         # The factorials
         fact[0] = 1
