@@ -43,7 +43,6 @@ class PyRAM:
     _ns_default = 1
     _lyrw_default = 20
     _id_default = 0
-    _use_splinalg_default = False
 
     def __init__(
         self,
@@ -269,9 +268,7 @@ class PyRAM:
         self._lyrw = kwargs.get("lyrw", PyRAM._lyrw_default)
 
         self._id = kwargs.get("id", PyRAM._id_default)
-        self._use_splinalg = kwargs.get(
-            "use_splinalg", PyRAM._use_splinalg_default
-        )
+
         self.proc_time = None
 
     def setup(self):
@@ -724,14 +721,6 @@ class PyRAM:
         fact = factorial(numpy.arange(n, dtype=float) + 1)
 
         # The binomial coefficients
-        # The binomial coefficients
-        """for i in range(n + 1):
-            _bin[i, 0] = 1
-            _bin[i, i] = 1
-        for i in range(2, n + 1):
-            for j in range(1, i):
-                _bin[i, j] = _bin[i - 1, j - 1] + _bin[i - 1, j]"""
-
         tmpx = numpy.zeros((n + 1, n + 1))
         tmpy = numpy.zeros((n + 1, n + 1))
         for ix in range(n + 1):
@@ -819,50 +808,6 @@ class PyRAM:
                 )
 
         return dg, dh1, dh2, dh3
-
-    @staticmethod
-    def gauss(n, a, b, pivot):
-        # Gaussian elimination
-
-        # Downward elimination
-        for i in range(n):
-            if i < n - 1:
-                a, b = pivot(n, i, a, b)
-            a[i, i] = 1 / a[i, i]
-            b[i] *= a[i, i]
-            if i < n - 1:
-                for j in range(i + 1, n + 1):
-                    a[i, j] *= a[i, i]
-                for k in range(i + 1, n):
-                    b[k] -= a[k, i] * b[i]
-                    for j in range(i + 1, n):
-                        a[k, j] -= a[k, i] * a[i, j]
-
-        # Back substitution
-        for i in range(n - 2, -1, -1):
-            for j in range(i + 1, n):
-                b[i] -= a[i, j] * b[j]
-
-        return a, b
-
-    @staticmethod
-    def pivot(n, i, a, b):
-        # Rows are interchanged for stability
-
-        i0 = i
-        amp0 = numpy.abs(a[i, i])
-        for j in range(i + 1, n):
-            amp = numpy.abs(a[j, i])
-            if amp > amp0:
-                i0 = j
-                amp0 = amp
-
-        if i0 != i:
-            b[i0], b[i] = b[i], b[i0]
-            for j in range(i, n + 1):
-                a[i0, j], a[i, j] = a[i, j], a[i0, j]
-
-        return a, b
 
     @staticmethod
     def fndrt(a, n, z, guerre):
