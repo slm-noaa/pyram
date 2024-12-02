@@ -94,7 +94,6 @@ class PyRAM:
         lyrw: Absorbing layer width (wavelengths). Defaults to _lyrw_default.
         NB: original zmax input not needed due to lyrw.
         id: Integer identifier for this instance.
-        use_splinalg: Set 'True' to replace gauss routine with scipy library.
         """
 
         self._freq, self._zs, self._zr = freq, zs, zr
