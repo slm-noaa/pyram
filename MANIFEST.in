@@ -1,0 +1,3 @@
+include LICENSE.md
+include pyram/Tests/TestPyRAMmp_Config.xml
+include pyram/Tests/tl_ref.line

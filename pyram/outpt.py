@@ -1,4 +1,6 @@
-'''outpt function definition'''
+"""
+outpt function definition
+"""
 
 import numpy
 from numba import jit, int64, float64, complex128
@@ -9,11 +11,11 @@ from numba import jit, int64, float64, complex128
               complex128[:], complex128[:, :]), nopython=True)
 def outpt(r, mdr, ndr, ndz, tlc, f3, u, _dir, ir, tll, tlg, cpl, cpg):
 
-    '''
+    """
     Output transmission loss and complex pressure.
     Complex pressure does not include cylindrical spreading term 1/sqrt(r)
     or phase term exp(-j*k0*r).
-    '''
+    """
 
     eps = 1e-20
 

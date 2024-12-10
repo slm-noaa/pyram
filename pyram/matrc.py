@@ -1,4 +1,6 @@
-'''solve function definition'''
+"""
+solve function definition
+"""
 
 from numba import jit, float64, int64, complex128
 
@@ -11,7 +13,9 @@ from numba import jit, float64, int64, complex128
 def matrc(k0, dz, iz, jz, nz, np, f1, f2, f3, ksq, alpw, alpb, ksqw, ksqb,
           rhob, r1, r2, r3, s1, s2, s3, pd1, pd2):
 
-    '''The tridiagonal matrices'''
+    """
+    The tridiagonal matrices
+    """
 
     a1 = k0**2 / 6
     a2 = 2 * k0**2 / 3
@@ -42,7 +46,7 @@ def matrc(k0, dz, iz, jz, nz, np, f1, f2, f3, ksq, alpw, alpb, ksqw, ksqb,
             f2[i] = 1
             f3[i] = alpw[i]
             ksq[i] = ksqw[i]
-    elif iz < jz:
+    else:
         i1 = iz
         i2 = jz + 1
         for i in range(iz + 1, jz + 1):

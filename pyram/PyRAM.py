@@ -1,8 +1,8 @@
-'''
+"""
 PyRAM: Python adaptation of the Range-dependent Acoustic Model (RAM).
 RAM was created by Michael D Collins at the US Naval Research Laboratory.
 This adaptation is of RAM v1.5, available from the Ocean Acoustics Library at
-http://oalib.hlsresearch.com/PE/RAM/
+https://oalib-acoustics.org/models-and-software/parabolic-equation
 
 The purpose of PyRAM is to provide a version of RAM which can be used within a
 Python interpreter environment (e.g. Spyder or the Jupyter notebook) and is
@@ -23,7 +23,7 @@ in specifying the environment (e.g. if the data comes from different sources).
 
 PyRAM also provides various conveniences, e.g. automatic calculation of range
 and depth steps (though these can be overridden using keyword arguments).
-'''
+"""
 
 import numpy
 from time import process_time
@@ -45,7 +45,7 @@ class PyRAM:
     def __init__(self, freq, zs, zr, z_ss, rp_ss, cw, z_sb, rp_sb, cb, rhob,
                  attn, rbzb, **kwargs):
 
-        '''
+        """
         -------
         args...
         -------
@@ -79,7 +79,7 @@ class PyRAM:
         lyrw: Absorbing layer width (wavelengths). Defaults to _lyrw_default.
         NB: original zmax input not needed due to lyrw.
         id: Integer identifier for this instance.
-        '''
+        """
 
         self._freq, self._zs, self._zr = freq, zs, zr
         self.check_inputs(z_ss, rp_ss, cw, z_sb, rp_sb, cb, rhob, attn, rbzb)
@@ -87,7 +87,7 @@ class PyRAM:
 
     def run(self):
 
-        '''
+        """
         Run the model. Sets the following instance variables:
         vr: Calculation ranges (m), NumPy 1D array.
         vz: Calculation depths (m), NumPy 1D array.
@@ -96,7 +96,7 @@ class PyRAM:
         tlg: Transmission loss (dB) grid,
              NumPy 2D array, dimensions vz.size by vr.size.
         proc_time: Processing time (s).
-        '''
+        """
 
         t0 = process_time()
 
@@ -133,7 +133,9 @@ class PyRAM:
 
     def check_inputs(self, z_ss, rp_ss, cw, z_sb, rp_sb, cb, rhob, attn, rbzb):
 
-        '''Basic checks on dimensions of inputs'''
+        """
+        Basic checks on dimensions of inputs
+        """
 
         self._status_ok = True
 
@@ -183,7 +185,9 @@ class PyRAM:
 
     def get_params(self, **kwargs):
 
-        '''Get the parameters from the keyword arguments'''
+        """
+        Get the parameters from the keyword arguments
+        """
 
         self._np = kwargs.get('np', PyRAM._np_default)
 
@@ -217,11 +221,13 @@ class PyRAM:
 
     def setup(self):
 
-        '''Initialise the parameters, acoustic field, and matrices'''
+        """
+        Initialise the parameters, acoustic field, and matrices
+        """
 
         if self._rbzb[-1, 0] < self._rmax:
             self._rbzb = numpy.append(self._rbzb,
-                                      [[self._rmax, self._rbzb[-1, 1]]],
+                                      numpy.array([[self._rmax, self._rbzb[-1, 1]]]),
                                       axis=0)
 
         self.eta = 1 / (40 * numpy.pi * numpy.log10(numpy.exp(1)))
@@ -241,18 +247,18 @@ class PyRAM:
         self.iz = max(1, self.iz)
         self.iz = min(self.nz - 1, self.iz)
 
-        self.u = numpy.zeros(self.nz + 2, dtype=numpy.complex)
-        self.v = numpy.zeros(self.nz + 2, dtype=numpy.complex)
-        self.ksq = numpy.zeros(self.nz + 2, dtype=numpy.complex)
-        self.ksqb = numpy.zeros(self.nz + 2, dtype=numpy.complex)
-        self.r1 = numpy.zeros([self.nz + 2, self._np], dtype=numpy.complex)
-        self.r2 = numpy.zeros([self.nz + 2, self._np], dtype=numpy.complex)
-        self.r3 = numpy.zeros([self.nz + 2, self._np], dtype=numpy.complex)
-        self.s1 = numpy.zeros([self.nz + 2, self._np], dtype=numpy.complex)
-        self.s2 = numpy.zeros([self.nz + 2, self._np], dtype=numpy.complex)
-        self.s3 = numpy.zeros([self.nz + 2, self._np], dtype=numpy.complex)
-        self.pd1 = numpy.zeros(self._np, dtype=numpy.complex)
-        self.pd2 = numpy.zeros(self._np, dtype=numpy.complex)
+        self.u = numpy.zeros(self.nz + 2, dtype=numpy.complex128)
+        self.v = numpy.zeros(self.nz + 2, dtype=numpy.complex128)
+        self.ksq = numpy.zeros(self.nz + 2, dtype=numpy.complex128)
+        self.ksqb = numpy.zeros(self.nz + 2, dtype=numpy.complex128)
+        self.r1 = numpy.zeros([self.nz + 2, self._np], dtype=numpy.complex128)
+        self.r2 = numpy.zeros([self.nz + 2, self._np], dtype=numpy.complex128)
+        self.r3 = numpy.zeros([self.nz + 2, self._np], dtype=numpy.complex128)
+        self.s1 = numpy.zeros([self.nz + 2, self._np], dtype=numpy.complex128)
+        self.s2 = numpy.zeros([self.nz + 2, self._np], dtype=numpy.complex128)
+        self.s3 = numpy.zeros([self.nz + 2, self._np], dtype=numpy.complex128)
+        self.pd1 = numpy.zeros(self._np, dtype=numpy.complex128)
+        self.pd2 = numpy.zeros(self._np, dtype=numpy.complex128)
 
         self.alpw = numpy.zeros(self.nz + 2)
         self.alpb = numpy.zeros(self.nz + 2)
@@ -291,7 +297,9 @@ class PyRAM:
 
     def profl(self):
 
-        '''Set up the profiles'''
+        """
+        Set up the profiles
+        """
 
         attnf = 10  # 10dB/wavelength at floor
 
@@ -323,7 +331,9 @@ class PyRAM:
 
     def updat(self):
 
-        '''Matrix updates'''
+        """
+        Matrix updates
+        """
 
         # Varying bathymetry
         if self.rd_bt:
@@ -338,7 +348,7 @@ class PyRAM:
             self.iz = int(numpy.floor(z / self._dz))  # First index below seabed
             self.iz = max(1, self.iz)
             self.iz = min(self.nz - 1, self.iz)
-            if (self.iz != jz):
+            if self.iz != jz:
                 matrc(self.k0, self._dz, self.iz, jz, self.nz, self._np,
                       self.f1, self.f2, self.f3, self.ksq, self.alpw,
                       self.alpb, self.ksqw, self.ksqb, self.rhob, self.r1,
@@ -385,7 +395,9 @@ class PyRAM:
 
     def selfs(self):
 
-        '''The self-starter'''
+        """
+        The self-starter
+        """
 
         # Conditions for the delta function
 
@@ -423,16 +435,18 @@ class PyRAM:
 
     def epade(self, ip=1):
 
-        '''The coefficients of the rational approximation'''
+        """
+        The coefficients of the rational approximation
+        """
 
         n = 2 * self._np
         _bin = numpy.zeros([n + 1, n + 1])
-        a = numpy.zeros([n + 1, n + 1], dtype=numpy.complex)
-        b = numpy.zeros(n, dtype=numpy.complex)
-        dg = numpy.zeros(n + 1, dtype=numpy.complex)
-        dh1 = numpy.zeros(n, dtype=numpy.complex)
-        dh2 = numpy.zeros(n, dtype=numpy.complex)
-        dh3 = numpy.zeros(n, dtype=numpy.complex)
+        a = numpy.zeros([n + 1, n + 1], dtype=numpy.complex128)
+        b = numpy.zeros(n, dtype=numpy.complex128)
+        dg = numpy.zeros(n + 1, dtype=numpy.complex128)
+        dh1 = numpy.zeros(n, dtype=numpy.complex128)
+        dh2 = numpy.zeros(n, dtype=numpy.complex128)
+        dh3 = numpy.zeros(n, dtype=numpy.complex128)
         fact = numpy.zeros(n + 1)
         sig = self.k0 * self._dr
 
@@ -501,7 +515,9 @@ class PyRAM:
     @staticmethod
     def deriv(n, sig, alp, dg, dh1, dh2, dh3, _bin, nu):
 
-        '''The derivatives of the operator function at x=0'''
+        """
+        The derivatives of the operator function at x=0
+        """
 
         dh1[0] = 0.5 * 1j * sig
         exp1 = -0.5
@@ -529,7 +545,9 @@ class PyRAM:
     @staticmethod
     def gauss(n, a, b, pivot):
 
-        '''Gaussian elimination'''
+        """
+        Gaussian elimination
+        """
 
         # Downward elimination
         for i in range(n):
@@ -555,7 +573,9 @@ class PyRAM:
     @staticmethod
     def pivot(n, i, a, b):
 
-        '''Rows are interchanged for stability'''
+        """
+        Rows are interchanged for stability
+        """
 
         i0 = i
         amp0 = numpy.abs(a[i, i])
@@ -575,7 +595,9 @@ class PyRAM:
     @staticmethod
     def fndrt(a, n, z, guerre):
 
-        '''The root finding subroutine'''
+        """
+        The root finding subroutine
+        """
 
         if n == 1:
             z[0] = -a[0] / a[1]
@@ -605,10 +627,12 @@ class PyRAM:
     @staticmethod
     def guerre(a, n, z, err, nter):
 
-        '''This subroutine finds a root of a polynomial of degree n > 2 by Laguerre's method'''
+        """
+        This subroutine finds a root of a polynomial of degree n > 2 by Laguerre's method
+        """
 
-        az = numpy.zeros(n, dtype=numpy.complex)
-        azz = numpy.zeros(n - 1, dtype=numpy.complex)
+        az = numpy.zeros(n, dtype=numpy.complex128)
+        azz = numpy.zeros(n - 1, dtype=numpy.complex128)
 
         eps = 1e-20
         # The coefficients of p'(z) and p''(z)
@@ -619,7 +643,7 @@ class PyRAM:
 
         _iter = 0
         jter = 0  # Missing from original code - assume this is correct
-        dz = numpy.Inf
+        dz = numpy.inf
 
         while (numpy.abs(dz) > err) and (_iter < nter - 1):
             p = a[n - 1] + a[n] * z
