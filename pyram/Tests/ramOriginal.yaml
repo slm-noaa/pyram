@@ -1,0 +1,43 @@
+model: "ram"
+description: "range-dependent example"
+source:
+  freq: 50.0    # Source freq, Hz
+  zs: 50.0
+  zr: 50.0
+grid:
+  range:
+    - rmax: 50000.0
+    - dr: 500.0
+    - ndr: 1
+  depth:
+    - zmax: 1000.0
+    - dz: 2.0
+    - ndz: 1
+model:
+  c0: 1600.0
+  np: 8
+  zmplt: 500.0
+  ns: 1
+  rs: 0.0
+environment:
+  rb:     [0.0, 40000.0]
+  zb:     [200.0, 400.0]
+  env0:
+    - r0: 0.0
+    - z_ssp:  [0.0, 100.0, 400.0]
+    - cw_ssp: [1480.0, 1520.0, 1530.0]
+    - zb:     0.0
+    - cb_ssp: 1700.0
+    - rhob:   1.5
+    - z_attn: [900.0, 1000.0]
+    - attn:   [0.5, 10.0]
+  env1:    
+    - r0:     25000.0
+    - z_ssp:  0.0
+    - cw_ssp: 1530.0
+    - zb:     0.0
+    - cb_ssp: 1700.0
+    - rhob:   1.5
+    - z_attn: [900.0, 1000.0]
+    - attn:   [0.5, 10.0]
+    
