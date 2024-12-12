@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyram"
+version = "2.0.0"
+authors = [
+    { name="slm-noaa", email="Sheri.Martinelli@noaa.gov"},
+	{ name="Marcus Donnelly", email="markus.k.donnelly@gmail.com"},
+	]
+description = "(Modified) Python adaptation of the Range-dependent Acoustic Model (RAM)"
+readme = "README.rst"
+requires-python = ">=3.8"
+classifiers = ['Development Status :: 3 - Alpha',
+                   'Intended Audience :: Science/Research',
+                   'Intended Audience :: Developers',
+                   'License :: OSI Approved :: BSD License',
+                   'Programming Language :: Python :: 3',
+                   'Topic :: Scientific/Engineering'
+                   ]
+dependencies = [
+    "matplotlib",
+    "xarray==2023.6.0",
+    "numpy>=1.23.0",
+    "scipy",
+	"numba >= 0.40"
+    ]
+
+[project.urls]
+Homepage='https://github.com/slm-noaa/pyram',
