@@ -2,7 +2,7 @@
 PyRAM: Python adaptation of the Range-dependent Acoustic Model (RAM).
 RAM was created by Michael D Collins at the US Naval Research Laboratory.
 This adaptation is of RAM v1.5, available from the Ocean Acoustics Library at
-http://oalib.hlsresearch.com/PE/RAM/
+https://oalib-acoustics.org/models-and-software/parabolic-equation
 
 The purpose of PyRAM is to provide a version of RAM which can be used within a
 Python interpreter environment (e.g. Spyder or the Jupyter notebook) and is
@@ -171,7 +171,9 @@ class PyRAM:
         return results
 
     def check_inputs(self, z_ss, rp_ss, cw, z_sb, rp_sb, cb, rhob, attn, rbzb):
-        """Basic checks on dimensions of inputs"""
+        """
+        Basic checks on dimensions of inputs
+        """
 
         self._status_ok = True
 
@@ -230,10 +232,10 @@ class PyRAM:
         self.rd_bt = True if self._rbzb.shape[0] > 1 else False
 
     def get_params(self, **kwargs):
-        """Get the parameters from the keyword arguments"""
-
         self._np = kwargs.get("np", PyRAM._np_default)
-
+        """
+        Get the parameters from the keyword arguments
+        """
         self._c0 = kwargs.get(
             "c0",
             (
@@ -271,12 +273,15 @@ class PyRAM:
         self.proc_time = None
 
     def setup(self):
-        """Initialise the parameters, acoustic field, and matrices"""
+
+        """
+        Initialise the parameters, acoustic field, and matrices
+        """
 
         if self._rbzb[-1, 0] < self._rmax:
-            self._rbzb = numpy.append(
-                self._rbzb, [[self._rmax, self._rbzb[-1, 1]]], axis=0
-            )
+            self._rbzb = numpy.append(self._rbzb,
+                                      numpy.array([[self._rmax, self._rbzb[-1, 1]]]),
+                                      axis=0)
 
         self.eta = 1 / (40 * numpy.pi * numpy.log10(numpy.exp(1)))
         self.ib = 0  # Bathymetry pair index
@@ -302,19 +307,19 @@ class PyRAM:
         )  # First index below seabed
         self.iz = max(1, self.iz)
         self.iz = min(self.nz - 1, self.iz)
+        self.u = numpy.zeros(self.nz + 2, dtype=numpy.complex128)
+        self.v = numpy.zeros(self.nz + 2, dtype=numpy.complex128)
+        self.ksq = numpy.zeros(self.nz + 2, dtype=numpy.complex128)
+        self.ksqb = numpy.zeros(self.nz + 2, dtype=numpy.complex128)
+        self.r1 = numpy.zeros([self.nz + 2, self._np], dtype=numpy.complex128)
+        self.r2 = numpy.zeros([self.nz + 2, self._np], dtype=numpy.complex128)
+        self.r3 = numpy.zeros([self.nz + 2, self._np], dtype=numpy.complex128)
+        self.s1 = numpy.zeros([self.nz + 2, self._np], dtype=numpy.complex128)
+        self.s2 = numpy.zeros([self.nz + 2, self._np], dtype=numpy.complex128)
+        self.s3 = numpy.zeros([self.nz + 2, self._np], dtype=numpy.complex128)
+        self.pd1 = numpy.zeros(self._np, dtype=numpy.complex128)
+        self.pd2 = numpy.zeros(self._np, dtype=numpy.complex128)
 
-        self.u = numpy.zeros(self.nz + 2, dtype=complex)
-        self.v = numpy.zeros(self.nz + 2, dtype=complex)
-        self.ksq = numpy.zeros(self.nz + 2, dtype=complex)
-        self.ksqb = numpy.zeros(self.nz + 2, dtype=complex)
-        self.r1 = numpy.zeros([self.nz + 2, self._np], dtype=complex)
-        self.r2 = numpy.zeros([self.nz + 2, self._np], dtype=complex)
-        self.r3 = numpy.zeros([self.nz + 2, self._np], dtype=complex)
-        self.s1 = numpy.zeros([self.nz + 2, self._np], dtype=complex)
-        self.s2 = numpy.zeros([self.nz + 2, self._np], dtype=complex)
-        self.s3 = numpy.zeros([self.nz + 2, self._np], dtype=complex)
-        self.pd1 = numpy.zeros(self._np, dtype=complex)
-        self.pd2 = numpy.zeros(self._np, dtype=complex)
 
         self.alpw = numpy.zeros(self.nz + 2)
         self.alpb = numpy.zeros(self.nz + 2)
@@ -385,7 +390,10 @@ class PyRAM:
         )
 
     def profl(self):
-        """Set up the profiles"""
+
+        """
+        Set up the profiles
+        """
 
         attnf = 10  # 10dB/wavelength at floor
 
@@ -436,7 +444,10 @@ class PyRAM:
             self.alpb[i] = numpy.sqrt(self.rhob[i] * self.cb[i] / self._c0)
 
     def updat(self):
-        """Matrix updates"""
+
+        """
+        Matrix updates
+        """
 
         # Varying bathymetry
         if self.rd_bt:
@@ -459,31 +470,12 @@ class PyRAM:
             self.iz = max(1, self.iz)
             self.iz = min(self.nz - 1, self.iz)
             if self.iz != jz:
-                matrc(
-                    self.k0,
-                    self._dz,
-                    self.iz,
-                    jz,
-                    self.nz,
-                    self._np,
-                    self.f1,
-                    self.f2,
-                    self.f3,
-                    self.ksq,
-                    self.alpw,
-                    self.alpb,
-                    self.ksqw,
-                    self.ksqb,
-                    self.rhob,
-                    self.r1,
-                    self.r2,
-                    self.r3,
-                    self.s1,
-                    self.s2,
-                    self.s3,
-                    self.pd1,
-                    self.pd2,
-                )
+
+                matrc(self.k0, self._dz, self.iz, jz, self.nz, self._np,
+                      self.f1, self.f2, self.f3, self.ksq, self.alpw,
+                      self.alpb, self.ksqw, self.ksqb, self.rhob, self.r1,
+                      self.r2, self.r3, self.s1, self.s2, self.s3, self.pd1,
+                      self.pd2)
 
         # Varying sound speed profile
         if self.rd_ss:
@@ -589,7 +581,10 @@ class PyRAM:
             )
 
     def selfs(self):
-        """The self-starter"""
+
+        """
+        The self-starter
+        """
 
         # Conditions for the delta function
 
@@ -695,18 +690,21 @@ class PyRAM:
             self._np,
         )
 
+    # def epade(self, ip=1):
     def epade(self, ip=False):
-        """The coefficients of the rational approximation"""
-
+        """
+        The coefficients of the rational approximation
+        """
         n = 2 * self._np
         _bin = numpy.zeros([n + 1, n + 1])
-        a = numpy.zeros([n + 1, n + 1], dtype=complex)
-        b = numpy.zeros(n, dtype=complex)
-        dg = numpy.zeros(n + 1, dtype=complex)
-        dh1 = numpy.zeros(n, dtype=complex)
-        dh2 = numpy.zeros(n, dtype=complex)
-        dh3 = numpy.zeros(n, dtype=complex)
+        a = numpy.zeros([n + 1, n + 1], dtype=numpy.complex128)
+        b = numpy.zeros(n, dtype=numpy.complex128)
+        dg = numpy.zeros(n + 1, dtype=numpy.complex128)
+        dh1 = numpy.zeros(n, dtype=numpy.complex128)
+        dh2 = numpy.zeros(n, dtype=numpy.complex128)
+        dh3 = numpy.zeros(n, dtype=numpy.complex128)
         fact = numpy.zeros(n)  # + 1)
+
         sig = self.k0 * self._dr
 
         # In ram.f, ip=1 is in all calls except from the self starter.
@@ -781,7 +779,9 @@ class PyRAM:
 
     @staticmethod
     def deriv(n, sig, alp, dg, dh1, dh2, dh3, _bin, nu):
-        """The derivatives of the operator function at x=0"""
+        """
+        The derivatives of the operator function at x=0
+        """
 
         dh1[0] = 0.5 * 1j * sig
         exp1 = -0.5
@@ -810,7 +810,10 @@ class PyRAM:
 
     @staticmethod
     def fndrt(a, n, z, guerre):
-        """The root finding subroutine"""
+
+        """
+        The root finding subroutine
+        """
 
         if n == 1:
             z[0] = -a[0] / a[1]
@@ -839,10 +842,13 @@ class PyRAM:
 
     @staticmethod
     def guerre(a, n, z, err, nter):
-        """This subroutine finds a root of a polynomial of degree n > 2 by Laguerre's method"""
 
-        az = numpy.zeros(n, dtype=complex)
-        azz = numpy.zeros(n - 1, dtype=complex)
+        """
+        This subroutine finds a root of a polynomial of degree n > 2 by Laguerre's method
+        """
+
+        az = numpy.zeros(n, dtype=numpy.complex128)
+        azz = numpy.zeros(n - 1, dtype=numpy.complex128)
 
         eps = 1e-20
         # The coefficients of p'(z) and p''(z)
@@ -853,7 +859,7 @@ class PyRAM:
 
         _iter = 0
         jter = 0  # Missing from original code - assume this is correct
-        dz = numpy.Inf
+        dz = numpy.inf
 
         while (numpy.abs(dz) > err) and (_iter < nter - 1):
             p = a[n - 1] + a[n] * z
