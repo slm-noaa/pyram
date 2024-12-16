@@ -24,8 +24,8 @@ class TestPyRAM(unittest.TestCase):
     """
 
     def setUp(self):
-        reader.read()
-        self.inputs = inputContainer()
+        self.inputs = reader.read()
+        # self.inputs = inputContainer()
 
         # source inputs
         self.inputs.sourceInputs.freq = 50.0
