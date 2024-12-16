@@ -3,7 +3,19 @@
 import unittest
 import numpy
 from pyram.PyRAM import PyRAM
+import pyram.readRAM as reader
 from scipy.linalg import lu_factor, lu_solve
+from pyram.RAMinput import (
+    inputContainer,
+    bathData,
+    soundSpeedProfile,
+    seabedProperties,
+    sourceInputs,
+    gridInputs,
+    ramInputs,
+)
+
+ramver = "test"
 
 
 class TestPyRAM(unittest.TestCase):
@@ -12,12 +24,38 @@ class TestPyRAM(unittest.TestCase):
     """
 
     def setUp(self):
+        reader.read()
+        self.inputs = inputContainer()
 
-        self.inputs = dict(
-            freq=50,
-            zs=50,
-            zr=50,
-            z_ss=numpy.array([0, 100, 400]),
+        # source inputs
+        self.inputs.sourceInputs.freq = 50.0
+        self.inputs.sourceInputs.zs = 50.0
+        self.inputs.sourceInputs.zr = 50.0
+
+        # grid inputs
+        self.inputs.gridInputs.rmax = 50000.0
+        self.inputs.gridInputs.dr = 500.0
+        self.inputs.gridInputs.ndr = 1
+        self.inputs.gridInputs.dz = 2.0
+
+        # ramInputs
+        self.inputs.ramInputs.c0 = 1600.0
+        # self.inputs.npd =
+        self.inputs.ramInputs.zmplt = 500.0
+        self.inputs.ramInputs.ramver = ramver
+
+        # bathData
+        self.inputs.bath.z = numpy.array([0])
+        self.inputs.bath.r = numpy.array([0])
+
+        # soundSpeedProfile
+        self.inputs.soundSpeeds.w = numpy.array(
+            [[1480, 1530], [1520, 1530], [1530, 1530]]
+        )
+        self.inputs.soundSpeeds.zw = numpy.array([0, 100, 400])
+        # self.inputs.soundSpeeds.b =
+
+        """ z_ss=numpy.array([0, 100, 400]),
             rp_ss=numpy.array([0, 25000]),
             cw=numpy.array([[1480, 1530], [1520, 1530], [1530, 1530]]),
             z_sb=numpy.array([0]),
@@ -25,13 +63,9 @@ class TestPyRAM(unittest.TestCase):
             cb=numpy.array([[1700]]),
             rhob=numpy.array([[1.5]]),
             attn=numpy.array([[0.5]]),
-            rmax=50000,
-            dr=500,
-            dz=2,
-            zmplt=500,
-            c0=1600,
+
             rbzb=numpy.array([[0, 200], [40000, 400]]),
-        )
+        )"""
 
         ref_tl_file = "tl_ref.line"
         dat = numpy.fromfile(ref_tl_file, sep="\t").reshape([100, 2])

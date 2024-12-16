@@ -3,5 +3,6 @@ __all__ = (
     'outpt',
     'PyRAM',
     'PyRAMmp',
-    'solve'
+    'solve',
+    'RAMinput',
 )
