@@ -32,6 +32,7 @@ from pyram.solve import solve
 from pyram.outpt import outpt
 from scipy.linalg import lu_factor, lu_solve
 from scipy.special import factorial, binom
+from pyram.RAMinput import inputContainer
 
 
 class PyRAM:
@@ -44,6 +45,7 @@ class PyRAM:
     _lyrw_default = 20
     _id_default = 0
 
+    """
     def __init__(
         self,
         freq,
@@ -60,44 +62,38 @@ class PyRAM:
         rbzb,
         **kwargs
     ):
+    """
+
+    def __init__(self, inputs, **kwargs):
         """
         -------
         args...
         -------
-        freq: Frequency (Hz).
-        zs: Source depth (m).
-        zr: Receiver depth (m).
-        z_ss: Water sound speed profile depths (m), NumPy 1D array.
-        rp_ss: Water sound speed profile update ranges (m), NumPy 1D array.
-        cw: Water sound speed values (m/s),
-            Numpy 2D array, dimensions z_ss.size by rp_ss.size.
-        z_sb: Seabed parameter profile depths (m), NumPy 1D array.
-        rp_sb: Seabed parameter update ranges (m), NumPy 1D array.
-        cb: Seabed sound speed values (m/s),
-            NumPy 2D array, dimensions z_sb.size by rp_sb.size.
-        rhob: Seabed density values (g/cm3), same dimensions as cb
-        attn: Seabed attenuation values (dB/wavelength), same dimensions as cb
-        rbzb: Bathymetry (m), Numpy 2D array with columns of ranges and depths
+
         ---------
         kwargs...
         ---------
-        np: Number of Pade terms. Defaults to _np_default.
-        c0: Reference sound speed (m/s). Defaults to mean of 1st profile.
-        dr: Calculation range step (m). Defaults to np times the wavelength.
-        dz: Calculation depth step (m). Defaults to _dzf*wavelength.
-        ndr: Number of range steps between outputs. Defaults to _ndr_default.
-        ndz: Number of depth steps between outputs. Defaults to _ndz_default.
-        zmplt: Maximum output depth (m). Defaults to maximum depth in rbzb.
-        rmax: Maximum calculation range (m). Defaults to max in rp_ss or rp_sb.
-        ns: Number of stability constraints. Defaults to _ns_default.
-        rs: Maximum range of the stability constraints (m). Defaults to rmax.
+        #np: Number of Pade terms. Defaults to _np_default.
+        #c0: Reference sound speed (m/s). Defaults to mean of 1st profile.
+        #dr: Calculation range step (m). Defaults to np times the wavelength.
+        #dz: Calculation depth step (m). Defaults to _dzf*wavelength.
+        #ndr: Number of range steps between outputs. Defaults to _ndr_default.
+        #ndz: Number of depth steps between outputs. Defaults to _ndz_default.
+        #zmplt: Maximum output depth (m). Defaults to maximum depth in rbzb.
+        #rmax: Maximum calculation range (m). Defaults to max in rp_ss or
+        #       rp_sb.
+        #ns: Number of stability constraints. Defaults to _ns_default.
+        #rs: Maximum range of the stability constraints (m). Defaults to rmax.
         lyrw: Absorbing layer width (wavelengths). Defaults to _lyrw_default.
         NB: original zmax input not needed due to lyrw.
         id: Integer identifier for this instance.
         """
 
-        self._freq, self._zs, self._zr = freq, zs, zr
-        self.check_inputs(z_ss, rp_ss, cw, z_sb, rp_sb, cb, rhob, attn, rbzb)
+        self._freq = inputs.source.freq
+        self._zs = inputs.source.zs
+        self._zr = inputs.source.zr
+
+        self.check_inputs(inputs)
         self.get_params(**kwargs)
 
     def run(self):
@@ -170,26 +166,35 @@ class PyRAM:
 
         return results
 
-    def check_inputs(self, z_ss, rp_ss, cw, z_sb, rp_sb, cb, rhob, attn, rbzb):
+    def check_inputs(self, inputs):
         """
+        def check_inputs(self, z_ss, rp_ss, cw, z_sb, rp_sb, cb, rhob, attn,
+        #                   rbzb):
         Basic checks on dimensions of inputs
         """
 
         self._status_ok = True
 
+        z_ss = numpy.array(inputs.watercol.z)
+        # Note: this is only checking first profile (not accounting for
+        # range dependence)
         # Source and receiver depths
-        if not z_ss[0] <= self._zs <= z_ss[-1]:
+        if not z_ss[0][0] <= self._zs <= z_ss[0][-1]:
             self._status_ok = False
             raise ValueError("Source depth outside sound speed depths")
-        if not z_ss[0] <= self._zr <= z_ss[-1]:
+        if not z_ss[0][0] <= self._zr <= z_ss[0][-1]:
             self._status_ok = False
             raise ValueError("Receiver depth outside sound speed depths")
         if self._status_ok:
-            self._z_ss = z_ss
+            self._z_ss = z_ss[0]
 
         # Water sound speed profiles
         num_depths = self._z_ss.size
+        rp_ss = numpy.array(inputs.watercol.r)
+        cw = numpy.array(inputs.watercol.c)
+        cw = cw.transpose()
         num_ranges = rp_ss.size
+
         cw_dims = cw.shape
         if (cw_dims[0] == num_depths) and (cw_dims[1] == num_ranges):
             self._rp_ss, self._cw = rp_ss, cw
@@ -199,8 +204,13 @@ class PyRAM:
             )
 
         # Seabed profiles
-        self._z_sb = z_sb
-        num_depths = self._z_sb.size
+        rp_sb = numpy.array(inputs.seabed.r)
+        self._z_sb = numpy.array(inputs.seabed.z)
+        cb = numpy.array(inputs.seabed.c).transpose()
+        rhob = numpy.array(inputs.seabed.rho).transpose()
+        attn = numpy.array(inputs.seabed.attn).transpose()
+        # self._z_sb = z_sb
+        num_depths = self._z_sb[0].size
         num_ranges = rp_sb.size
         for prof in [cb, rhob, attn]:
             prof_dims = prof.shape
@@ -217,7 +227,10 @@ class PyRAM:
             raise ValueError(
                 "Dimensions of z_sb, rp_sb, cb, rhob and attn must be consistent."
             )
-
+        rb = numpy.array(inputs.bath.r)
+        zb = numpy.array(inputs.bath.z)
+        rbzb = numpy.concatenate((rb, zb), axis=1)
+        # Make sure the source is always in the water:
         if rbzb[:, 1].max() <= self._z_ss[-1]:
             self._rbzb = rbzb
         else:
@@ -226,7 +239,8 @@ class PyRAM:
                 "Deepest sound speed point must be at or below deepest bathymetry point."
             )
 
-        # Set flags for range-dependence (water SSP, seabed profile, bathymetry)
+        # Set flags for range-dependence
+        # (water SSP, seabed profile, bathymetry)
         self.rd_ss = True if self._rp_ss.size > 1 else False
         self.rd_sb = True if self._rp_sb.size > 1 else False
         self.rd_bt = True if self._rbzb.shape[0] > 1 else False
@@ -273,15 +287,16 @@ class PyRAM:
         self.proc_time = None
 
     def setup(self):
-
         """
         Initialise the parameters, acoustic field, and matrices
         """
 
         if self._rbzb[-1, 0] < self._rmax:
-            self._rbzb = numpy.append(self._rbzb,
-                                      numpy.array([[self._rmax, self._rbzb[-1, 1]]]),
-                                      axis=0)
+            self._rbzb = numpy.append(
+                self._rbzb,
+                numpy.array([[self._rmax, self._rbzb[-1, 1]]]),
+                axis=0,
+            )
 
         self.eta = 1 / (40 * numpy.pi * numpy.log10(numpy.exp(1)))
         self.ib = 0  # Bathymetry pair index
@@ -319,7 +334,6 @@ class PyRAM:
         self.s3 = numpy.zeros([self.nz + 2, self._np], dtype=numpy.complex128)
         self.pd1 = numpy.zeros(self._np, dtype=numpy.complex128)
         self.pd2 = numpy.zeros(self._np, dtype=numpy.complex128)
-
 
         self.alpw = numpy.zeros(self.nz + 2)
         self.alpb = numpy.zeros(self.nz + 2)
@@ -390,7 +404,6 @@ class PyRAM:
         )
 
     def profl(self):
-
         """
         Set up the profiles
         """
@@ -444,7 +457,6 @@ class PyRAM:
             self.alpb[i] = numpy.sqrt(self.rhob[i] * self.cb[i] / self._c0)
 
     def updat(self):
-
         """
         Matrix updates
         """
@@ -471,11 +483,31 @@ class PyRAM:
             self.iz = min(self.nz - 1, self.iz)
             if self.iz != jz:
 
-                matrc(self.k0, self._dz, self.iz, jz, self.nz, self._np,
-                      self.f1, self.f2, self.f3, self.ksq, self.alpw,
-                      self.alpb, self.ksqw, self.ksqb, self.rhob, self.r1,
-                      self.r2, self.r3, self.s1, self.s2, self.s3, self.pd1,
-                      self.pd2)
+                matrc(
+                    self.k0,
+                    self._dz,
+                    self.iz,
+                    jz,
+                    self.nz,
+                    self._np,
+                    self.f1,
+                    self.f2,
+                    self.f3,
+                    self.ksq,
+                    self.alpw,
+                    self.alpb,
+                    self.ksqw,
+                    self.ksqb,
+                    self.rhob,
+                    self.r1,
+                    self.r2,
+                    self.r3,
+                    self.s1,
+                    self.s2,
+                    self.s3,
+                    self.pd1,
+                    self.pd2,
+                )
 
         # Varying sound speed profile
         if self.rd_ss:
@@ -581,7 +613,6 @@ class PyRAM:
             )
 
     def selfs(self):
-
         """
         The self-starter
         """
@@ -810,7 +841,6 @@ class PyRAM:
 
     @staticmethod
     def fndrt(a, n, z, guerre):
-
         """
         The root finding subroutine
         """
@@ -842,7 +872,6 @@ class PyRAM:
 
     @staticmethod
     def guerre(a, n, z, err, nter):
-
         """
         This subroutine finds a root of a polynomial of degree n > 2 by Laguerre's method
         """

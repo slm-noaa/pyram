@@ -127,7 +127,7 @@ def read(ramver: str = "test"):
     inData.watercol.attns = 0.0
 
     inData.seabed.r = inData.bath.r
-    inData.seabed.z, inData.seabed.c = itemgetter("z_attn", "cb_ssp")(tempdata)
+    inData.seabed.z, inData.seabed.c = itemgetter("zb", "cb_ssp")(tempdata)
     inData.seabed.cs = 0.0
     inData.seabed.rho = itemgetter("rhob")(tempdata)
     inData.seabed.attn = itemgetter("attn")(tempdata)
