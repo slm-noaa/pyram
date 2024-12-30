@@ -10,8 +10,9 @@ Modified by slm-noaa
 Thurs Dec 5 24
 """
 
-# import numpy as np
 # from dataclasses import dataclass, field
+# use dataclass later maybe to neaten this up and add some checks.
+from dataclasses import field
 
 
 class sourceInputs:
@@ -65,25 +66,42 @@ class bathData:
     r: list = field(default_factory=list)  # range array (m)
 
 
-class soundSpeedProfile:
-    """sound speed profiles for water and bottom
-    defaults are initialized from example ramgeo.in
+class physicalProperties:
+    """Refactor this a little bit... group physical properties then
+    we can define "water", "seabed", whatever with said properties.
+    We can even pre-define default materials.
     """
 
+    r: float = 0.0  # range for this description (or ranges)
+    z: list = field(default_factory=list)  # depth grid for this material (m)
+    c: list = field(default_factory=list)  # (compressional) sound speed (m/s)
+    cs: list = field(default_factory=list)  # (shear) sound speed (m/s)
+    rho: list = field(default_factory=list)  # density (g/cc)
+    attn: list = field(
+        default_factory=list
+    )  # (compressional) attenuation (units?)
+    attns: list = field(default_factory=list)  # (shear) attenuation (units?)
+
+
+"""class soundSpeedProfile:"""
+#    """sound speed profiles for water and bottom
+#    defaults are initialized from example ramgeo.in
+#    """
+"""
     w: list = field(default_factory=list)  # sound speed in water (m/s)
     zw: list = field(default_factory=list)  # depth at water ss point
-    b: list = field(default_factory=list)  # sound speed in seabed (m/s)
-    bs: list = field(default_factory=list)  # sound speed in seabed (m/s)
+    cb: list = field(default_factory=list)  # sound speed in seabed (m/s)
+    cbs: list = field(default_factory=list)  # sound speed in seabed (m/s)
     zb: list = field(default_factory=list)  # depth at seabed ss point
     zbs: list = field(default_factory=list)  # depth at seabed ss point
     r: float = 0.0
 
 
-class seabedProperties:
-    """sound speed profiles for water and bottom
-    defaults are initialized from example ramgeo.in
-    """
-
+class seabedProperties:"""
+#    """sound speed profiles for water and bottom
+#    defaults are initialized from example ramgeo.in
+#    """
+"""
     rhob: list = field(default_factory=list)  # density of seabed layers
     attn: list = field(default_factory=list)  # attenuation of seabed layers
     attns: list = field(
@@ -93,6 +111,7 @@ class seabedProperties:
     z_attn: list = field(default_factory=list)  # depth of layers
     z_attns: list = field(default_factory=list)  # depth of layers
     r: float = 0.0  # range point for definitions
+"""
 
 
 class inputContainer:
@@ -100,5 +119,10 @@ class inputContainer:
     ram: ramInputs = ramInputs()
     grid: gridInputs = gridInputs()
     bath: bathData = bathData()
-    soundSpeeds: [soundSpeedProfile] = field(default_factory=list)
-    seabeds: [seabedProperties] = field(default_factory=list)
+    watercol: physicalProperties = physicalProperties()
+    seabed: physicalProperties = physicalProperties()
+    # soundSpeeds: soundSpeedProfile = soundSpeedProfile()
+    # seabeds: seabedProperties = seabedProperties()
+    # = field(default_factory=list)
+    # soundSpeeds: [soundSpeedProfile] = field(default_factory=list)
+    # seabeds: [seabedProperties] = field(default_factory=list)
