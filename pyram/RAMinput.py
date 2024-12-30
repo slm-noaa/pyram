@@ -79,8 +79,10 @@ class physicalProperties:
     rho: list = field(default_factory=list)  # density (g/cc)
     attn: list = field(
         default_factory=list
-    )  # (compressional) attenuation (units?)
-    attns: list = field(default_factory=list)  # (shear) attenuation (units?)
+    )  # (compressional) attenuation (dB/wavelength)
+    attns: list = field(
+        default_factory=list
+    )  # (shear) attenuation (dB/wavelength)
 
 
 """class soundSpeedProfile:"""

@@ -11,9 +11,10 @@ from . import Tests
 from operator import itemgetter
 
 # import numpy as np
-from pathlib import Path
-from dataclasses import dataclass, field
-from pyram.RAMinput import bathData, seabedProperties, inputContainer
+# from pathlib import Path
+
+# from dataclasses import dataclass, field
+from pyram.RAMinput import inputContainer
 
 # from .ioTools.readOutputs import (
 #    readTLgrid,
@@ -63,7 +64,7 @@ inputfn = {
     "test": "ramOriginal.yaml",
 }
 
-
+"""
 class dataContainer:
     rVector: list = field(default_factory=list)
     zVector: list = field(default_factory=list)
@@ -72,6 +73,7 @@ class dataContainer:
     bath: bathData = bathData()
     seabed: seabedProperties = seabedProperties()
     outpath: Path
+"""
 
 
 def read(ramver: str = "test"):
@@ -112,105 +114,27 @@ def read(ramver: str = "test"):
         inData.ram.rs,
     ) = itemgetter("c0", "np", "zmplt", "ns", "rs")(modeldata)
 
-    rb, zb = itemgetter("rb", "zb")(envdata)
+    inData.bath.r, inData.bath.z = itemgetter("rb", "zb")(envdata)
+    tempdata = itemgetter("env")(envdata)
 
-    """
-        # Read bathymetry inputs
-        bathSection = True
-        rbath = []
-        zbath = []
-        while bathSection == True:
-            line = f.readline()
-            split = line.split(" ")
-            if float(split[0]) == -1:
-                bathSection = False
-                continue
-            else:
-                rbath.append(float(split[0]))  # range of bath data point
-                zbath.append(float(split[1]))  # depth points
-        # put bathymetry in data container
-        data.bath.r = np.array(rbath)
-        data.bath.z = np.array(zbath)
-        data.bath.n = len(rbath)
+    inData.watercol.r = inData.bath.r
+    inData.watercol.z, inData.watercol.c = itemgetter("z_ssp", "cw_ssp")(
+        tempdata
+    )
+    inData.watercol.cs = 0.0
+    inData.watercol.rho = 1.024
+    inData.watercol.attn = 0.0
+    inData.watercol.attns = 0.0
 
-        # read water sound speed profile
-        cwSection = True
-        zcw = []
-        cw = []
-        while cwSection == True:
-            line = f.readline()
-            split = line.split(" ")
-            if float(split[0]) == -1:
-                cwSection = False
-                continue
-            else:
-                zcw.append(
-                    float(split[0])
-                )  # depth array for sound speed in water
-                cw.append(float(split[1]))  # water sound speed array
-        zcw = np.array(zcw)
-        cw = np.array(cw)
+    inData.seabed.r = inData.bath.r
+    inData.seabed.z, inData.seabed.c = itemgetter("z_attn", "cb_ssp")(tempdata)
+    inData.seabed.cs = 0.0
+    inData.seabed.rho = itemgetter("rhob")(tempdata)
+    inData.seabed.attn = itemgetter("attn")(tempdata)
+    inData.seabed.attns = 0.0
 
-        # read bottom sound speed profile
-        cbSection = True
-        zcb = []
-        cb = []
-        while cbSection == True:
-            line = f.readline()
-            split = line.split(" ")
-            if float(split[0]) == -1:
-                cbSection = False
-                continue
-            else:
-                zcb.append(
-                    float(split[0])
-                )  # depth array for bottom sound speed
-                cb.append(float(split[1]))  # bottom sound speed array
-        zcb = np.array(zcb)
-        cb = np.array(cb)
+    return inData
 
-        # read bottom layer densities
-        rhoSection = True
-        zrhob = []
-        rhob = []
-        while rhoSection == True:
-            line = f.readline()
-            split = line.split(" ")
-            if float(split[0]) == -1:
-                rhoSection = False
-                continue
-            else:
-                zrhob.append(
-                    float(split[0])
-                )  # depth array for bottom sound speed
-                rhob.append(float(split[1]))  # bottom sound speed array
-        zrhob = np.array(zcb)
-        rhob = np.array(cb)
-        # put data in container
-        data.seabed.z = np.array(zrhob)
-        data.seabed.rhob = np.array(rhob)
-        data.seabed.n = len(zrhob)
-
-        # read bottom layer attenuation
-        attnSection = True
-        zattn = []
-        attn = []
-        while attnSection == True:
-            line = f.readline()
-            split = line.split(" ")
-            if float(split[0]) == -1:
-                attnSection = False
-                continue
-            else:
-                zattn.append(
-                    float(split[0])
-                )  # depth array for bottom sound speed
-                attn.append(float(split[1]))  # bottom sound speed array
-        # put data in container
-        data.seabed.z = np.array(zattn)
-        data.seabed.attn = np.array(attn)
-        data.seabed.n = len(zattn)
-    """
     # # Read field file
     # if hasFields[ramver]:
     #     data.field = readField(fieldPath)
