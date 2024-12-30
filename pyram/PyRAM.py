@@ -291,6 +291,8 @@ class PyRAM:
         Initialise the parameters, acoustic field, and matrices
         """
 
+        # if range dependent (i.e., properties change before max range),
+        # append a final entry to the range-depth grid:
         if self._rbzb[-1, 0] < self._rmax:
             self._rbzb = numpy.append(
                 self._rbzb,
@@ -420,14 +422,14 @@ class PyRAM:
         )
         self.cb = numpy.interp(
             z,
-            self._z_sb,
+            self._z_sb[self.sb_ind, :],
             self._cb[:, self.sb_ind],
             left=self._cb[0, self.sb_ind],
             right=self._cb[-1, self.sb_ind],
         )
         self.rhob = numpy.interp(
             z,
-            self._z_sb,
+            self._z_sb[self.sb_ind, :],
             self._rhob[:, self.sb_ind],
             left=self._rhob[0, self.sb_ind],
             right=self._rhob[-1, self.sb_ind],
@@ -437,10 +439,11 @@ class PyRAM:
         )
         zlyr = numpy.concatenate(
             (
-                self._z_sb,
+                self._z_sb[self.sb_ind, :],
                 [
-                    self._z_sb[-1] + 0.75 * self._lyrw * self._lambda,
-                    self._z_sb[-1] + self._lyrw * self._lambda,
+                    self._z_sb[self.sb_ind, -1]
+                    + 0.75 * self._lyrw * self._lambda,
+                    self._z_sb[self.sb_ind, -1] + self._lyrw * self._lambda,
                 ],
             )
         )
@@ -873,7 +876,8 @@ class PyRAM:
     @staticmethod
     def guerre(a, n, z, err, nter):
         """
-        This subroutine finds a root of a polynomial of degree n > 2 by Laguerre's method
+        This subroutine finds a root of a polynomial of degree n > 2
+        by Laguerre's method
         """
 
         az = numpy.zeros(n, dtype=numpy.complex128)
