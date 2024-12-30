@@ -32,15 +32,14 @@ from pyram.solve import solve
 from pyram.outpt import outpt
 from scipy.linalg import lu_factor, lu_solve
 from scipy.special import factorial, binom
-from pyram.RAMinput import inputContainer
+
+# from pyram.RAMinput import inputContainer
 
 
 class PyRAM:
 
-    _np_default = 8
     _dzf = 0.1
-    _ndr_default = 1
-    _ndz_default = 1
+    # keep the below defaults.
     _ns_default = 1
     _lyrw_default = 20
     _id_default = 0
@@ -88,10 +87,20 @@ class PyRAM:
         NB: original zmax input not needed due to lyrw.
         id: Integer identifier for this instance.
         """
-
         self._freq = inputs.source.freq
         self._zs = inputs.source.zs
         self._zr = inputs.source.zr
+
+        self._np = inputs.ram.npd
+        self._c0 = inputs.ram.c0
+        self._zmplt = inputs.ram.zmplt
+
+        self._dr = inputs.grid.dr
+        self._dz = inputs.grid.dz
+
+        self._rmax = inputs.grid.rmax
+        self._ndr = inputs.grid.ndr
+        self._ndz = inputs.grid.ndz
 
         self.check_inputs(inputs)
         self.get_params(**kwargs)
@@ -246,36 +255,27 @@ class PyRAM:
         self.rd_bt = True if self._rbzb.shape[0] > 1 else False
 
     def get_params(self, **kwargs):
-        self._np = kwargs.get("np", PyRAM._np_default)
         """
         Get the parameters from the keyword arguments
         """
-        self._c0 = kwargs.get(
-            "c0",
-            (
-                numpy.mean(self._cw[:, 0])
-                if len(self._cw.shape) > 1
-                else numpy.mean(self._cw)
-            ),
-        )
+        # override number of Pade terms:
+        self._np = kwargs.get("np", self._np)
+        # override c0:
+        self._c0 = kwargs.get("c0", self._c0)
 
         self._lambda = self._c0 / self._freq
 
         # dr and dz are based on 1500m/s to get sensible output steps
-        self._dr = kwargs.get("dr", self._np * 1500 / self._freq)
-        self._dz = kwargs.get("dz", PyRAM._dzf * 1500 / self._freq)
+        # slm: Note: I don't think this is very safe. If you want
+        #       to do this properly, set a CFL number and use the minimum
+        #       wavelength (don't just pick something).
+        # self._dr = kwargs.get("dr", self._np * 1500 / self._freq)
+        # self._dz = kwargs.get("dz", PyRAM._dzf * 1500 / self._freq)
+        self._dr = kwargs.get("dr", self._dr)  # allow override
+        self._dz = kwargs.get("dz", self._dz)
 
-        self._ndr = kwargs.get("ndr", PyRAM._ndr_default)
-        self._ndz = kwargs.get("ndz", PyRAM._ndz_default)
-
-        self._zmplt = kwargs.get("zmplt", self._rbzb[:, 1].max())
-
-        self._rmax = kwargs.get(
-            "rmax",
-            numpy.max(
-                [self._rp_ss.max(), self._rp_sb.max(), self._rbzb[:, 0].max()]
-            ),
-        )
+        # okay, you can override this:
+        self._zmplt = kwargs.get("zmplt", self._zmplt)
 
         self._ns = kwargs.get("ns", PyRAM._ns_default)
         self._rs = kwargs.get("rs", self._rmax + self._dr)
