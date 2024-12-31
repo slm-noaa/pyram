@@ -43,18 +43,6 @@ class TestPyRAM(unittest.TestCase):
 
         pyram = PyRAM(
             self.inputs,
-            # self.inputs["freq"],
-            # self.inputs["zs"],
-            # self.inputs["zr"],
-            # self.inputs["z_ss"],
-            # self.inputs["rp_ss"],
-            # self.inputs["cw"],
-            # self.inputs["z_sb"],
-            # self.inputs["rp_sb"],
-            # self.inputs["cb"],
-            # self.inputs["rhob"],
-            # self.inputs["attn"],
-            # self.inputs["rbzb"],
             # rmax=self.inputs["rmax"],
             # dr=self.inputs["dr"],
             # dz=self.inputs["dz"],
