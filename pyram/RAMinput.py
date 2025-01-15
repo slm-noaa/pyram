@@ -85,37 +85,6 @@ class physicalProperties:
     )  # (shear) attenuation (dB/wavelength)
 
 
-"""class soundSpeedProfile:"""
-#    """sound speed profiles for water and bottom
-#    defaults are initialized from example ramgeo.in
-#    """
-"""
-    w: list = field(default_factory=list)  # sound speed in water (m/s)
-    zw: list = field(default_factory=list)  # depth at water ss point
-    cb: list = field(default_factory=list)  # sound speed in seabed (m/s)
-    cbs: list = field(default_factory=list)  # sound speed in seabed (m/s)
-    zb: list = field(default_factory=list)  # depth at seabed ss point
-    zbs: list = field(default_factory=list)  # depth at seabed ss point
-    r: float = 0.0
-
-
-class seabedProperties:"""
-#    """sound speed profiles for water and bottom
-#    defaults are initialized from example ramgeo.in
-#    """
-"""
-    rhob: list = field(default_factory=list)  # density of seabed layers
-    attn: list = field(default_factory=list)  # attenuation of seabed layers
-    attns: list = field(
-        default_factory=list
-    )  # shear wave attenuation of seabed layers
-    z_rhob: list = field(default_factory=list)  # depth of layers
-    z_attn: list = field(default_factory=list)  # depth of layers
-    z_attns: list = field(default_factory=list)  # depth of layers
-    r: float = 0.0  # range point for definitions
-"""
-
-
 class inputContainer:
     source: sourceInputs = sourceInputs()
     ram: ramInputs = ramInputs()
@@ -123,8 +92,3 @@ class inputContainer:
     bath: bathData = bathData()
     watercol: physicalProperties = physicalProperties()
     seabed: physicalProperties = physicalProperties()
-    # soundSpeeds: soundSpeedProfile = soundSpeedProfile()
-    # seabeds: seabedProperties = seabedProperties()
-    # = field(default_factory=list)
-    # soundSpeeds: [soundSpeedProfile] = field(default_factory=list)
-    # seabeds: [seabedProperties] = field(default_factory=list)

@@ -7,12 +7,6 @@ import pyram.readRAM as reader
 from scipy.linalg import lu_factor, lu_solve
 from pyram.RAMinput import (
     inputContainer,
-    #    bathData,
-    #    soundSpeedProfile,
-    #    seabedProperties,
-    #    sourceInputs,
-    #    gridInputs,
-    #    ramInputs,
 )
 
 ramver = "test"
@@ -43,11 +37,6 @@ class TestPyRAM(unittest.TestCase):
 
         pyram = PyRAM(
             self.inputs,
-            # rmax=self.inputs["rmax"],
-            # dr=self.inputs["dr"],
-            # dz=self.inputs["dz"],
-            # zmplt=self.inputs["zmplt"],
-            # c0=self.inputs["c0"],
         )
         pyram.run()
 
