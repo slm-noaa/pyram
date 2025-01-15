@@ -114,10 +114,15 @@ def read(ramver: str = "test"):
         inData.ram.rs,
     ) = itemgetter("c0", "np", "zmplt", "ns", "rs")(modeldata)
 
-    inData.bath.r, inData.bath.z = itemgetter("rb", "zb")(envdata)
+    inData.bath.r, inData.bath.z, r_ssp = itemgetter("rb", "zb", "r_ssp")(
+        envdata
+    )
+
+    inData.watercol.r = r_ssp
+    inData.seabed.r = r_ssp
+
     tempdata = itemgetter("env")(envdata)
 
-    inData.watercol.r = inData.bath.r
     inData.watercol.z, inData.watercol.c = itemgetter("z_ssp", "cw_ssp")(
         tempdata
     )
@@ -126,7 +131,6 @@ def read(ramver: str = "test"):
     inData.watercol.attn = 0.0
     inData.watercol.attns = 0.0
 
-    inData.seabed.r = inData.bath.r
     inData.seabed.z, inData.seabed.c = itemgetter("zb", "cb_ssp")(tempdata)
     inData.seabed.cs = 0.0
     inData.seabed.rho = itemgetter("rhob")(tempdata)
