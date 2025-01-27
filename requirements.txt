@@ -1,0 +1,6 @@
+matplotlib
+xarray==2023.6.0
+numpy>=1.23.0
+scipy
+numba>=0.40
+pyyaml
